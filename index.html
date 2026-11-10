@@ -212,4 +212,163 @@
       filtered.forEach(item => {
         const qty = cart[item.id] || 0;
         const isSelected = qty > 0;
-        const catInfo = CATEGORY_MAP[item.category] || { icon: "🌱"
+        const catInfo = CATEGORY_MAP[item.category] || { icon: "🌱" };
+
+        html += `
+          <div onclick="changeQty(${item.id}, 1)" class="rainbow-border ${isSelected ? 'selected' : ''} bg-white rounded-2xl p-3.5 shadow-sm hover:shadow-md cursor-pointer flex flex-col justify-between border border-slate-100 transition-all select-none">
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-xl shadow-inner">${catInfo.icon}</span>
+              <span class="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">${item.weight}</span>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-slate-800 text-sm leading-tight line-clamp-1">${item.nameEn}</h3>
+              <p class="text-slate-400 text-xs font-semibold italic line-clamp-1 mb-3">${item.nameVn}</p>
+            </div>
+            <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
+              <span class="font-extrabold text-pink-600 text-xs md:text-sm">${item.price.toLocaleString('vi-VN')} đ</span>
+              ${isSelected ? `
+                <div onclick="event.stopPropagation()" class="flex items-center bg-slate-900 text-white rounded-xl px-1.5 py-1 gap-1.5 shadow-md scale-105">
+                  <button onclick="changeQty(${item.id}, -1)" class="w-5 h-5 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold text-xs text-pink-400">-</button>
+                  <span class="font-extrabold text-xs px-1 text-emerald-400">${qty}</span>
+                  <button onclick="changeQty(${item.id}, 1)" class="w-5 h-5 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold text-xs text-pink-400">+</button>
+                </div>
+              ` : `
+                <button class="w-7 h-7 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-base transition-colors">+</button>
+              `}
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+      updateBottomBar();
+    }
+
+    function updateBottomBar() {
+      const totalCount = Object.values(cart).reduce((sum, q) => sum + q, 0);
+      const totalPrice = Object.entries(cart).reduce((sum, [id, q]) => {
+        const item = items.find(i => i.id === Number(id));
+        return sum + (item ? item.price * q : 0);
+      }, 0);
+
+      const bar = document.getElementById("orderBar");
+      if (totalCount > 0) {
+        bar.classList.remove("hidden");
+        document.getElementById("badgeTotal").innerText = totalCount;
+        document.getElementById("priceTotal").innerText = totalPrice.toLocaleString('vi-VN');
+      } else {
+        bar.classList.add("hidden");
+      }
+    }
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      renderTabs();
+      renderGrid();
+    }
+
+    function changeQty(id, delta) {
+      const current = cart[id] || 0;
+      const updated = Math.max(0, current + delta);
+      if (updated === 0) {
+        delete cart[id];
+      } else {
+        cart[id] = updated;
+      }
+      renderGrid();
+    }
+
+    function generateMessage() {
+      let msg = "Chào shop, mình muốn đặt hàng:\n";
+      let total = 0;
+      Object.entries(cart).forEach(([id, q]) => {
+        const item = items.find(i => i.id === Number(id));
+        if (item) {
+          msg += `- ${item.nameVn} (${item.weight}): x${q}\n`;
+          total += item.price * q;
+        }
+      });
+      msg += `\nTổng cộng: ${total.toLocaleString('vi-VN')} VND\nCảm ơn shop!`;
+      return msg;
+    }
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderGrid();
+    });
+
+    document.getElementById("btnClear").addEventListener("click", () => {
+      cart = {};
+      renderGrid();
+    });
+
+    document.getElementById("btnReview").addEventListener("click", () => {
+      document.getElementById("modalText").innerText = generateMessage();
+      document.getElementById("orderModal").classList.remove("hidden");
+    });
+
+    document.getElementById("btnCloseModal").addEventListener("click", () => {
+      document.getElementById("orderModal").classList.add("hidden");
+    });
+
+    document.getElementById("btnBackModal").addEventListener("click", () => {
+      document.getElementById("orderModal").classList.add("hidden");
+    });
+
+    document.getElementById("btnCopyZalo").addEventListener("click", () => {
+      navigator.clipboard.writeText(generateMessage());
+      const btn = document.getElementById("btnCopyZalo");
+      btn.innerText = "✓ Copied to Clipboard!";
+      btn.classList.add("bg-emerald-500");
+      setTimeout(() => {
+        btn.innerText = "📋 Copy Message for Zalo";
+        btn.classList.remove("bg-emerald-500");
+      }, 2500);
+    });
+
+    // Smart CSV parsing skipping title/KPI rows
+    fetch(CSV_URL)
+      .then(res => res.text())
+      .then(csv => {
+        const rawLines = csv.split('\n').filter(l => l.trim() !== '');
+        
+        // Find header row containing Category & Vietnamese Name
+        let headerIdx = rawLines.findIndex(l => l.includes("Category") && l.includes("Vietnamese Name"));
+        if (headerIdx === -1) headerIdx = 0;
+
+        const headers = parseCSVLine(rawLines[headerIdx]);
+        const catIdx = headers.findIndex(h => h.toLowerCase().includes("category"));
+        const vnIdx = headers.findIndex(h => h.toLowerCase().includes("vietnamese"));
+        const enIdx = headers.findIndex(h => h.toLowerCase().includes("english"));
+        const weightIdx = headers.findIndex(h => h.toLowerCase().includes("specification") || h.toLowerCase().includes("quy cách"));
+        const priceIdx = headers.findIndex(h => h.toLowerCase().includes("price") || h.toLowerCase().includes("giá"));
+
+        const dataLines = rawLines.slice(headerIdx + 1);
+        const parsed = dataLines.map((line, idx) => {
+          const parts = parseCSVLine(line);
+          const rawPrice = (priceIdx !== -1 ? parts[priceIdx] : parts[5]) || "0";
+          const rawWeight = (weightIdx !== -1 ? parts[weightIdx] : parts[4]) || "500 gr";
+          const cleanPrice = parseInt(rawPrice.replace(/[^0-9]/g, ''), 10);
+
+          return {
+            id: idx + 1,
+            category: (catIdx !== -1 ? parts[catIdx] : parts[0]) || "Leafy Greens",
+            nameVn: (vnIdx !== -1 ? parts[vnIdx] : parts[2]) || "",
+            nameEn: (enIdx !== -1 ? parts[enIdx] : parts[3]) || parts[vnIdx] || "",
+            weight: rawWeight,
+            price: cleanPrice
+          };
+        }).filter(i => i.nameVn && i.price > 1000); // Filter out summary/header junk rows
+
+        if (parsed.length > 0) items = parsed;
+      })
+      .catch(() => {})
+      .finally(() => {
+        renderTabs();
+        renderGrid();
+      });
+
+    renderTabs();
+    renderGrid();
+  </script>
+</body>
+</html>
