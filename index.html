@@ -55,9 +55,9 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    // Direct Google Sheet ID
+    // Direct Google Sheets CSV Export Link
     const SPREADSHEET_ID = '1m02-1ymsbJiTDo29hVtsbrV85cm3E0MF2UB2HgbFYl4';
-    const OPEN_SHEET_URL = `https://opensheet.elk.sh/${SPREADSHEET_ID}/1`;
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`;
 
     const CATEGORY_MAP = {
       "Leafy Greens": { nameEn: "Leafy Greens", nameVn: "Nhóm Rau", icon: "🥬", color: "bg-emerald-500", light: "bg-emerald-50 text-emerald-700" },
@@ -67,6 +67,50 @@
       "Mushrooms": { nameEn: "Mushrooms", nameVn: "Nhóm Nấm", icon: "🍄", color: "bg-orange-500", light: "bg-orange-50 text-orange-700" },
       "Dairy": { nameEn: "Dairy & Yogurt", nameVn: "Sữa Chua", icon: "🥛", color: "bg-cyan-500", light: "bg-cyan-50 text-cyan-700" }
     };
+
+    // Helper function to parse CSV lines safely
+    function parseCSV(text) {
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      if (lines.length < 2) return [];
+      
+      const parseLine = (line) => {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(cur.trim().replace(/^"|"$/g, ''));
+            cur = '';
+          } else {
+            cur += char;
+          }
+        }
+        result.push(cur.trim().replace(/^"|"$/g, ''));
+        return result;
+      };
+
+      const headers = parseLine(lines[0]);
+      const dataRows = lines.slice(1);
+
+      return dataRows.map((line, idx) => {
+        const values = parseLine(line);
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = values[i] || '';
+        });
+        return {
+          id: idx + 1,
+          category: obj["Category"] || "Leafy Greens",
+          nameVn: obj["Vietnamese Name"] || "",
+          nameEn: obj["English Name"] || obj["Vietnamese Name"] || "",
+          weight: obj["Unit Specification"] || "500 gr",
+          price: parseInt((obj["Price (VND)"] || "0").replace(/[^0-9]/g, ''), 10),
+        };
+      }).filter(item => item.nameVn && item.price > 0);
+    }
 
     function App() {
       const [items, setItems] = useState([]);
@@ -78,23 +122,15 @@
       const [copied, setCopied] = useState(false);
 
       useEffect(() => {
-        fetch(OPEN_SHEET_URL)
-          .then((res) => res.json())
-          .then((data) => {
-            const parsed = data.map((row, idx) => ({
-              id: idx + 1,
-              category: row["Category"] || "Leafy Greens",
-              nameVn: row["Vietnamese Name"] || row["Tên hàng"] || "",
-              nameEn: row["English Name"] || row["Vietnamese Name"] || "",
-              weight: row["Unit Specification"] || row["Quy cách"] || "500 gr",
-              price: parseInt(row["Price (VND)"] || row["Giá bán"] || 0, 10),
-            })).filter(item => item.nameVn && item.price > 0);
-
+        fetch(CSV_URL)
+          .then((res) => res.text())
+          .then((csvText) => {
+            const parsed = parseCSV(csvText);
             setItems(parsed);
             setLoading(false);
           })
           .catch((err) => {
-            console.error("Failed to load live sheet data:", err);
+            console.error("Failed to load CSV:", err);
             setLoading(false);
           });
       }, []);
@@ -283,91 +319,4 @@
           )}
 
           {totalItems > 0 && (
-            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-lg glass-nav border border-white/60 shadow-2xl rounded-3xl p-3.5 z-40 flex items-center justify-between gap-3 animate-bounce-short">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <span className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-yellow-400 flex items-center justify-center text-2xl shadow-lg">
-                    🛍️
-                  </span>
-                  <span className="absolute -top-1.5 -right-1.5 bg-slate-900 text-emerald-400 font-extrabold text-xs w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
-                    {totalItems}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                    Total Order / Tổng đơn hàng
-                  </p>
-                  <p className="text-lg font-black text-slate-900">
-                    {totalPrice.toLocaleString('vi-VN')} <span className="text-xs text-pink-600 font-bold">VND</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCart({})}
-                  className="p-2.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                  title="Clear Order"
-                >
-                  🗑️
-                </button>
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="px-4 py-3 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white font-extrabold text-xs md:text-sm shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
-                >
-                  <span>🛍️ Review & Copy</span>
-                  <span className="text-[10px] opacity-80">(Xem & Sao chép)</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {showModal && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl relative border border-slate-100 animate-in fade-in zoom-in duration-200">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center hover:bg-slate-200"
-                >
-                  ✕
-                </button>
-
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-2xl">📋</span>
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 text-lg">Your Zalo Order Message</h3>
-                    <p className="text-xs text-slate-400 font-semibold">Tin nhắn đặt hàng Zalo của bạn</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-4 text-xs md:text-sm font-mono text-slate-700 whitespace-pre-wrap border border-slate-200 max-h-60 overflow-y-auto mb-5 leading-relaxed">
-                  {generateZaloMessage()}
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 py-3.5 rounded-2xl bg-slate-100 font-bold text-slate-600 text-xs md:text-sm hover:bg-slate-200"
-                  >
-                    Back to Edit
-                  </button>
-                  <button
-                    onClick={copyToClipboard}
-                    className={`flex-1 py-3.5 rounded-2xl font-black text-xs md:text-sm shadow-lg transition-all text-white flex items-center justify-center gap-2 ${
-                      copied ? "bg-emerald-500 scale-95" : "bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 active:scale-95"
-                    }`}
-                  >
-                    {copied ? "✓ Copied to Clipboard!" : "📋 Copy Message for Zalo"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
-</body>
-</html>
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-lg glass-nav border border-white/60 shadow-2xl rounded-3xl p-3.5 z-40 flex items-center justify-between gap-
