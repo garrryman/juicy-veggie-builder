@@ -66,7 +66,12 @@
     <!-- Category Tabs -->
     <div id="categoryTabs" class="flex gap-2 overflow-x-auto pb-4 mb-4 scrollbar-none"></div>
 
-    <!-- Items Grid (Larger Tiles: 2 cols mobile, 3 cols tablet/desktop) -->
+    <!-- Loading Indicator -->
+    <div id="loadingState" class="text-center py-12 text-slate-400 font-semibold text-sm">
+      Loading fresh produce menu...
+    </div>
+
+    <!-- Items Grid -->
     <div id="itemsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5"></div>
 
     <!-- Sticky Bottom Bar -->
@@ -116,7 +121,7 @@
 
   <script>
     const SPREADSHEET_ID = '1m02-1ymsbJiTDo29hVtsbrV85cm3E0MF2UB2HgbFYl4';
-    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`;
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&t=${Date.now()}`;
 
     const CATEGORY_MAP = {
       "Leafy Greens": { nameEn: "Leafy Greens", icon: "🥬", color: "bg-emerald-500" },
@@ -132,7 +137,6 @@
     let activeCategory = "ALL";
     let searchQuery = "";
 
-    // Automatically turns GitHub blob URLs into raw direct image URLs
     function normalizeImageUrl(url) {
       if (!url) return "";
       let clean = url.trim();
@@ -349,6 +353,7 @@
       })
       .catch(err => console.error("Error loading sheet:", err))
       .finally(() => {
+        document.getElementById("loadingState").style.display = "none";
         renderTabs();
         renderGrid();
       });
