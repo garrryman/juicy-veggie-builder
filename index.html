@@ -18,8 +18,8 @@
     .rainbow-border::after {
       content: '';
       position: absolute;
-      inset: -2px;
-      border-radius: 1.25rem;
+      inset: -2.5px;
+      border-radius: 1.5rem;
       background: linear-gradient(45deg, #ff4e50, #f9d423, #00e676, #00b0ff, #d500f9);
       z-index: -1;
       opacity: 0;
@@ -29,13 +29,13 @@
       opacity: 1;
     }
     .glass-nav {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(12px);
     }
   </style>
 </head>
 <body class="pb-32">
-  <div class="max-w-4xl mx-auto px-4 pt-6">
+  <div class="max-w-5xl mx-auto px-4 pt-6">
     <!-- Header -->
     <header class="text-center mb-6">
       <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-md mb-3">
@@ -66,8 +66,8 @@
     <!-- Category Tabs -->
     <div id="categoryTabs" class="flex gap-2 overflow-x-auto pb-4 mb-4 scrollbar-none"></div>
 
-    <!-- Items Grid -->
-    <div id="itemsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5"></div>
+    <!-- Items Grid (Larger Tiles: 2 cols mobile, 3 cols tablet/desktop) -->
+    <div id="itemsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5"></div>
 
     <!-- Sticky Bottom Bar -->
     <div id="orderBar" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-lg glass-nav border border-white/60 shadow-2xl rounded-3xl p-3.5 z-40 flex items-center justify-between gap-3">
@@ -118,46 +118,6 @@
     const SPREADSHEET_ID = '1m02-1ymsbJiTDo29hVtsbrV85cm3E0MF2UB2HgbFYl4';
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`;
 
-    const DEFAULT_ITEMS = [
-      { id: 1, category: "Leafy Greens", nameVn: "Cải Cầu Vồng TC", nameEn: "Rainbow Chard (Standard)", weight: "500 gr", price: 42000 },
-      { id: 2, category: "Leafy Greens", nameVn: "Cải Dún TC", nameEn: "Wrinkled Mustard Greens", weight: "500 gr", price: 45000 },
-      { id: 3, category: "Leafy Greens", nameVn: "Cải ngọt TC", nameEn: "Choy Sum / Sweet Greens", weight: "500 gr", price: 35000 },
-      { id: 4, category: "Leafy Greens", nameVn: "Cần Tây Baby", nameEn: "Baby Celery", weight: "500 gr", price: 37000 },
-      { id: 5, category: "Leafy Greens", nameVn: "Bó Xôi TC", nameEn: "Spinach (Standard)", weight: "500 gr", price: 35000 },
-      { id: 6, category: "Leafy Greens", nameVn: "Đọt Su", nameEn: "Chayote Shoots", weight: "500 gr", price: 35000 },
-      { id: 7, category: "Leafy Greens", nameVn: "Lơ Xanh", nameEn: "Broccoli", weight: "500 gr", price: 35000 },
-      { id: 8, category: "Leafy Greens", nameVn: "Sư Tím Baby", nameEn: "Baby Purple Kohlrabi", weight: "500 gr", price: 35000 },
-      { id: 9, category: "Leafy Greens", nameVn: "Tần Ô TC", nameEn: "Garland Chrysanthemum", weight: "500 gr", price: 39000 },
-      { id: 10, category: "Leafy Greens", nameVn: "Xà Lách Lô Lô Tím TC", nameEn: "Purple Lollo Rossa Lettuce", weight: "500 gr", price: 39000 },
-      { id: 11, category: "Leafy Greens", nameVn: "Xà Lách Thủy Tinh", nameEn: "Hydroponic Crystal Lettuce", weight: "500 gr", price: 39000 },
-      { id: 12, category: "Fruiting Vegetables & Gourds", nameVn: "Bắp Non", nameEn: "Baby Corn", weight: "500 gr", price: 50000 },
-      { id: 13, category: "Fruiting Vegetables & Gourds", nameVn: "Bí Hạt Đậu", nameEn: "Butternut Squash", weight: "500 gr", price: 35000 },
-      { id: 14, category: "Fruiting Vegetables & Gourds", nameVn: "Bí Nhật Mini (Bí Hạt Dẻ)", nameEn: "Mini Kabocha / Chestnut Squash", weight: "500 gr", price: 45000 },
-      { id: 15, category: "Fruiting Vegetables & Gourds", nameVn: "Cà Chua Beef", nameEn: "Beefsteak Tomatoes", weight: "500 gr", price: 38000 },
-      { id: 16, category: "Fruiting Vegetables & Gourds", nameVn: "Cà Chua Mix", nameEn: "Mixed Cherry Tomatoes", weight: "500 gr", price: 46000 },
-      { id: 17, category: "Fruiting Vegetables & Gourds", nameVn: "Bầu Bắp", nameEn: "Bottle Gourd", weight: "500 gr", price: 30000 },
-      { id: 18, category: "Fruiting Vegetables & Gourds", nameVn: "Dưa Leo Nhật", nameEn: "Japanese Cucumber", weight: "500 gr", price: 33000 },
-      { id: 19, category: "Fruiting Vegetables & Gourds", nameVn: "Khổ Qua Rừng", nameEn: "Wild Bitter Melon", weight: "500 gr", price: 35000 },
-      { id: 20, category: "Fruiting Vegetables & Gourds", nameVn: "Măng Tây 1", nameEn: "Asparagus (Grade 1)", weight: "500 gr", price: 45000 },
-      { id: 21, category: "Fruiting Vegetables & Gourds", nameVn: "Ớt Snack", nameEn: "Snack Mini Sweet Peppers", weight: "500 gr", price: 45000 },
-      { id: 22, category: "Fruiting Vegetables & Gourds", nameVn: "Ớt Palermo", nameEn: "Sweet Palermo Peppers", weight: "500 gr", price: 50000 },
-      { id: 23, category: "Fruiting Vegetables & Gourds", nameVn: "Bơ (Size 2-3)", nameEn: "Avocado (Size 2-3)", weight: "500 gr", price: 26000 },
-      { id: 24, category: "Fruiting Vegetables & Gourds", nameVn: "Dưa Lưới Huỳnh Long", nameEn: "Huynh Long Yellow Melon", weight: "500 gr", price: 35000 },
-      { id: 25, category: "Roots & Tubers", nameVn: "Cà Tím", nameEn: "Eggplant", weight: "500 gr", price: 25000 },
-      { id: 26, category: "Roots & Tubers", nameVn: "Củ Cải Đỏ", nameEn: "Red Radish", weight: "500 gr", price: 53000 },
-      { id: 27, category: "Roots & Tubers", nameVn: "Củ Dền", nameEn: "Beetroot", weight: "500 gr", price: 30000 },
-      { id: 28, category: "Roots & Tubers", nameVn: "Hành Tây Đà Lạt", nameEn: "Da Lat Onions", weight: "500 gr", price: 30000 },
-      { id: 29, category: "Roots & Tubers", nameVn: "Khoai Lang Mật", nameEn: "Honey Sweet Potatoes", weight: "500 gr", price: 33000 },
-      { id: 30, category: "Roots & Tubers", nameVn: "Khoai Lang Nhật", nameEn: "Japanese Sweet Potatoes", weight: "500 gr", price: 26000 },
-      { id: 31, category: "Roots & Tubers", nameVn: "Rốt Baby Lơ", nameEn: "Baby Carrots with Tops", weight: "500 gr", price: 47000 },
-      { id: 32, category: "Fruits", nameVn: "Chanh Dây Hoàng Kim", nameEn: "Golden Passion Fruit", weight: "500 gr", price: 55000 },
-      { id: 33, category: "Fruits", nameVn: "Chuối Laba", nameEn: "Laba Bananas", weight: "500 gr", price: 17000 },
-      { id: 34, category: "Fruits", nameVn: "Bơ Booth (Size 2-3)", nameEn: "Booth Avocado (Size 2-3)", weight: "500 gr", price: 26000 },
-      { id: 35, category: "Fruits", nameVn: "Dưa Lưới Huỳnh Long", nameEn: "Huynh Long Yellow Melon", weight: "500 gr", price: 35000 },
-      { id: 36, category: "Mushrooms", nameVn: "Nấm Mỡ Nâu", nameEn: "Brown Button / Cremini", weight: "500 gr", price: 125000 },
-      { id: 37, category: "Dairy", nameVn: "Sữa chua phô mai", nameEn: "Cheese Yogurt", weight: "10 hũ", price: 110000 }
-    ];
-
     const CATEGORY_MAP = {
       "Leafy Greens": { nameEn: "Leafy Greens", icon: "🥬", color: "bg-emerald-500" },
       "Fruiting Vegetables & Gourds": { nameEn: "Fruiting Veggies", icon: "🫑", color: "bg-rose-500" },
@@ -167,10 +127,22 @@
       "Dairy": { nameEn: "Dairy & Yogurt", icon: "🥛", color: "bg-cyan-500" }
     };
 
-    let items = DEFAULT_ITEMS;
+    let items = [];
     let cart = {};
     let activeCategory = "ALL";
     let searchQuery = "";
+
+    // Automatically turns GitHub blob URLs into raw direct image URLs
+    function normalizeImageUrl(url) {
+      if (!url) return "";
+      let clean = url.trim();
+      if (clean.includes("github.com") && clean.includes("/blob/")) {
+        clean = clean
+          .replace("https://github.com/", "https://raw.githubusercontent.com/")
+          .replace("/blob/", "/");
+      }
+      return clean;
+    }
 
     function parseCSVLine(line) {
       const res = [];
@@ -214,26 +186,40 @@
         const isSelected = qty > 0;
         const catInfo = CATEGORY_MAP[item.category] || { icon: "🌱" };
 
+        const mediaBlock = item.imageUrl
+          ? `<div class="relative w-full aspect-square rounded-2xl overflow-hidden bg-slate-100 mb-3">
+               <img
+                 src="${item.imageUrl}"
+                 alt="${item.nameEn}"
+                 loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                 class="w-full h-full object-cover"
+               />
+               <div style="display:none;" class="w-full h-full items-center justify-center text-5xl bg-slate-50">${catInfo.icon}</div>
+               <span class="absolute top-2.5 right-2.5 text-[11px] font-bold text-slate-700 bg-white/90 backdrop-blur px-2.5 py-0.5 rounded-full shadow-sm">${item.weight}</span>
+             </div>`
+          : `<div class="relative w-full aspect-square rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/80 flex items-center justify-center mb-3">
+               <span class="text-5xl md:text-6xl">${catInfo.icon}</span>
+               <span class="absolute top-2.5 right-2.5 text-[11px] font-bold text-slate-500 bg-white px-2.5 py-0.5 rounded-full shadow-sm">${item.weight}</span>
+             </div>`;
+
         html += `
-          <div onclick="changeQty(${item.id}, 1)" class="rainbow-border ${isSelected ? 'selected' : ''} bg-white rounded-2xl p-3.5 shadow-sm hover:shadow-md cursor-pointer flex flex-col justify-between border border-slate-100 transition-all select-none">
-            <div class="flex items-center justify-between mb-2">
-              <span class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-xl shadow-inner">${catInfo.icon}</span>
-              <span class="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">${item.weight}</span>
-            </div>
+          <div onclick="changeQty(${item.id}, 1)" class="rainbow-border ${isSelected ? 'selected' : ''} bg-white rounded-3xl p-3.5 md:p-4 shadow-sm hover:shadow-lg cursor-pointer flex flex-col justify-between border border-slate-100 transition-all select-none">
+            ${mediaBlock}
             <div>
-              <h3 class="font-extrabold text-slate-800 text-sm leading-tight line-clamp-1">${item.nameEn}</h3>
-              <p class="text-slate-400 text-xs font-semibold italic line-clamp-1 mb-3">${item.nameVn}</p>
+              <h3 class="font-extrabold text-slate-800 text-sm md:text-base leading-snug line-clamp-1">${item.nameEn}</h3>
+              <p class="text-slate-400 text-xs md:text-sm font-semibold italic line-clamp-1 mb-3">${item.nameVn}</p>
             </div>
-            <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
-              <span class="font-extrabold text-pink-600 text-xs md:text-sm">${item.price.toLocaleString('vi-VN')} đ</span>
+            <div class="flex items-center justify-between mt-auto pt-2.5 border-t border-slate-100">
+              <span class="font-extrabold text-pink-600 text-sm md:text-base">${item.price.toLocaleString('vi-VN')} đ</span>
               ${isSelected ? `
-                <div onclick="event.stopPropagation()" class="flex items-center bg-slate-900 text-white rounded-xl px-1.5 py-1 gap-1.5 shadow-md scale-105">
-                  <button onclick="changeQty(${item.id}, -1)" class="w-5 h-5 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold text-xs text-pink-400">-</button>
-                  <span class="font-extrabold text-xs px-1 text-emerald-400">${qty}</span>
-                  <button onclick="changeQty(${item.id}, 1)" class="w-5 h-5 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold text-xs text-pink-400">+</button>
+                <div onclick="event.stopPropagation()" class="flex items-center bg-slate-900 text-white rounded-xl px-2 py-1 gap-2 shadow-md scale-105">
+                  <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold text-sm text-pink-400">-</button>
+                  <span class="font-extrabold text-xs md:text-sm px-1 text-emerald-400">${qty}</span>
+                  <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold text-sm text-pink-400">+</button>
                 </div>
               ` : `
-                <button class="w-7 h-7 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-base transition-colors">+</button>
+                <button class="w-8 h-8 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-lg transition-colors">+</button>
               `}
             </div>
           </div>
@@ -325,13 +311,10 @@
       }, 2500);
     });
 
-    // Smart CSV parsing skipping title/KPI rows
     fetch(CSV_URL)
       .then(res => res.text())
       .then(csv => {
         const rawLines = csv.split('\n').filter(l => l.trim() !== '');
-        
-        // Find header row containing Category & Vietnamese Name
         let headerIdx = rawLines.findIndex(l => l.includes("Category") && l.includes("Vietnamese Name"));
         if (headerIdx === -1) headerIdx = 0;
 
@@ -341,34 +324,34 @@
         const enIdx = headers.findIndex(h => h.toLowerCase().includes("english"));
         const weightIdx = headers.findIndex(h => h.toLowerCase().includes("specification") || h.toLowerCase().includes("quy cách"));
         const priceIdx = headers.findIndex(h => h.toLowerCase().includes("price") || h.toLowerCase().includes("giá"));
+        const imgIdx = headers.findIndex(h => h.toLowerCase().includes("image") || h.toLowerCase().includes("hình") || h.toLowerCase().includes("url"));
 
         const dataLines = rawLines.slice(headerIdx + 1);
         const parsed = dataLines.map((line, idx) => {
           const parts = parseCSVLine(line);
-          const rawPrice = (priceIdx !== -1 ? parts[priceIdx] : parts[5]) || "0";
-          const rawWeight = (weightIdx !== -1 ? parts[weightIdx] : parts[4]) || "500 gr";
+          const rawPrice = (priceIdx !== -1 ? parts[priceIdx] : parts[6]) || "0";
+          const rawWeight = (weightIdx !== -1 ? parts[weightIdx] : parts[5]) || "500 gr";
+          const rawImg = (imgIdx !== -1 ? parts[imgIdx] : parts[7]) || "";
           const cleanPrice = parseInt(rawPrice.replace(/[^0-9]/g, ''), 10);
 
           return {
             id: idx + 1,
-            category: (catIdx !== -1 ? parts[catIdx] : parts[0]) || "Leafy Greens",
-            nameVn: (vnIdx !== -1 ? parts[vnIdx] : parts[2]) || "",
-            nameEn: (enIdx !== -1 ? parts[enIdx] : parts[3]) || parts[vnIdx] || "",
+            category: (catIdx !== -1 ? parts[catIdx] : parts[1]) || "Leafy Greens",
+            nameVn: (vnIdx !== -1 ? parts[vnIdx] : parts[3]) || "",
+            nameEn: (enIdx !== -1 ? parts[enIdx] : parts[4]) || parts[vnIdx] || "",
             weight: rawWeight,
-            price: cleanPrice
+            price: cleanPrice,
+            imageUrl: normalizeImageUrl(rawImg)
           };
-        }).filter(i => i.nameVn && i.price > 1000); // Filter out summary/header junk rows
+        }).filter(i => i.nameVn && i.price > 1000);
 
         if (parsed.length > 0) items = parsed;
       })
-      .catch(() => {})
+      .catch(err => console.error("Error loading sheet:", err))
       .finally(() => {
         renderTabs();
         renderGrid();
       });
-
-    renderTabs();
-    renderGrid();
   </script>
 </body>
 </html>
